@@ -18,6 +18,13 @@ namespace SchoolTimetable
 		public Form1()
         {
             InitializeComponent();
+
+            Helper helper = new Helper();
+            helper.CreateNewDatabase();
+            helper.ConnectToDatabase();
+            helper.CreateTable();
+            helper.FillTable();
+            helper.PrintHighscores();
         }
 
 		#region Event handlers
