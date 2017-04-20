@@ -52,12 +52,14 @@ namespace SchoolTimetable
         // Writes the highscores to the console sorted on score in descending order.
         public void PrintHighscores()
         {
-            string sql = "select * from highscores order by score desc";
+            //string sql = "select * from highscores order by score desc";
+            string sql = "select count(1) AS COUNT from highscores order by score desc";
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
             SQLiteDataReader reader = command.ExecuteReader();
             while (reader.Read())
                 //Console.WriteLine("Name: " + reader["name"] + "\tScore: " + reader["score"]);
-                MessageBox.Show("Name: " + reader["name"] + "\tScore: " + reader["score"]);
+                //MessageBox.Show("Name: " + reader["name"] + "\tScore: " + reader["score"]);
+                MessageBox.Show(reader["COUNT"].ToString());
             //Console.ReadLine();
         }
     }
