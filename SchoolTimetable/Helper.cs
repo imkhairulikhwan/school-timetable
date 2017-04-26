@@ -41,7 +41,7 @@ namespace SchoolTimetable
             string sql = "insert into highscores (name, score) values ('Me', 3000)";
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
             command.ExecuteNonQuery();
-            sql = "insert into highscores (name, score) values ('Myself', 6000)";
+            sql = "insert into highscores (name, score) values ('Myse123123123qweqwezxcfadasdadlfMyse123123123qweqwezxcfadasdadlf', 6000)";
             command = new SQLiteCommand(sql, m_dbConnection);
             command.ExecuteNonQuery();
             sql = "insert into highscores (name, score) values ('And I', 9001)";
