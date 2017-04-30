@@ -12,9 +12,13 @@ namespace SchoolTimetable
         public string Standard { get; set; }
         public string Subject { get; set; }
         public int WeeklyCredit { get; set; }
-        public Timeslot OddEven { get; set; }
+		public int WeeklyUsedCredit { get; set; }
+		public Timeslot OddEven { get; set; }
+		public List<TimeslotDetails> ListOfTimeslot { get; set; }
+		//public int Timeslot { get; set; }
+		//public int Day { get; set; }
 
-        public static Teacher FromCsv(string csvLine)
+		public static Teacher FromCsv(string csvLine)
         {
             try
             {
@@ -33,5 +37,11 @@ namespace SchoolTimetable
                 throw;
             }
         }
-    }    
+    }  
+	
+	public class TimeslotDetails
+	{
+		public int TimeslotDay { get; set; }
+		public int Day { get; set; }
+	}
 }
