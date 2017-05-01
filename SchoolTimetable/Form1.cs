@@ -23,8 +23,10 @@ namespace SchoolTimetable
 		string selectedCBAnalysisValue1;
 		string selectedCBAnalysisValue2;
 		string selectedCBAnalysisValue3;
+		
 		public List<Teacher> publicResult { get; set; }
 		public Boolean RepeatFurtherView { get; set; } = true;
+		public string TimetableTeachersName { get; set; } = "teachers";
 
 		public Form1()
         {
@@ -52,12 +54,7 @@ namespace SchoolTimetable
         private void button10_Click(object sender, EventArgs e)
         {
 
-        }
-
-        private void comboBox4_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
+        }        
 
         private void btnSelectTeacherListFile_Click(object sender, EventArgs e)
         {
@@ -125,6 +122,12 @@ namespace SchoolTimetable
 
         private void btnImportTeacherList_Click(object sender, EventArgs e)
         {
+			if(txtTeacherList.Text == string.Empty)
+			{
+				MessageBox.Show("Please select any file first");
+				return;
+			}
+
 			ConnectToDB();
 			ImportTeacherListIntoDB();
 			PopulateAnalysisComboBox();
@@ -140,7 +143,7 @@ namespace SchoolTimetable
 			SQLiteCommand cmd;
 			//m_dbConnection.Open();  //Initiate connection to the db
 			cmd = m_dbConnection.CreateCommand();
-			cmd.CommandText = $"SELECT DISTINCT TeacherName FROM teachers";  //set the passed query
+			cmd.CommandText = $"SELECT DISTINCT TeacherName FROM {TimetableTeachersName}";  //set the passed query
 			ad = new SQLiteDataAdapter(cmd);
 			ad.Fill(dt); //fill the datasource
 			cbTeacherAnalyzeOutputs.DataSource = dt;
@@ -149,7 +152,7 @@ namespace SchoolTimetable
 
 			//m_dbConnection.Open();  //Initiate connection to the db
 			cmd = m_dbConnection.CreateCommand();
-			cmd.CommandText = $"SELECT DISTINCT Subject FROM teachers";  //set the passed query
+			cmd.CommandText = $"SELECT DISTINCT Subject FROM {TimetableTeachersName}";  //set the passed query
 			ad = new SQLiteDataAdapter(cmd);
 			ad.Fill(dt2); //fill the datasource
 			cbChooseSubject.DataSource = dt2;
@@ -186,7 +189,12 @@ namespace SchoolTimetable
 
         private void CreateTeacherTable()
         {
-            string sql = "create table if not exists teachers (TeacherName varchar(100), Standard varchar(20), Subject varchar(20), WeeklyCredit int, OddEven int)";
+			if(String.IsNullOrEmpty(TimetableTeachersName))
+			{
+				TimetableTeachersName = "teachers";
+			}
+
+            string sql = $"create table if not exists {TimetableTeachersName} (TeacherName varchar(100), Standard varchar(20), Subject varchar(20), WeeklyCredit int, OddEven int)";
             SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
             command.ExecuteNonQuery();
         }
@@ -221,13 +229,20 @@ namespace SchoolTimetable
 
 		private void ClearTeacherTable()
 		{
-			string sql = $"delete from teachers";
+			if (String.IsNullOrEmpty(TimetableTeachersName))
+			{
+				TimetableTeachersName = "teachers";
+			}
+
+			string sql = $"delete from {TimetableTeachersName}";
 			SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
 			command.ExecuteNonQuery();
 		}
 
 		private void ClearGroupsTable()
 		{
+			return; 
+
 			string sql = $"delete from groups";
 			SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
 			command.ExecuteNonQuery();
@@ -250,7 +265,12 @@ namespace SchoolTimetable
 
                 foreach(Teacher teacher in values)
                 {
-                    string sql = $"insert into teachers (TeacherName, Standard, Subject, WeeklyCredit, OddEven) values ('{teacher.TeacherName}'," +
+					if (String.IsNullOrEmpty(TimetableTeachersName))
+					{
+						TimetableTeachersName = "teachers";
+					}
+
+					string sql = $"insert into {TimetableTeachersName} (TeacherName, Standard, Subject, WeeklyCredit, OddEven) values ('{teacher.TeacherName}'," +
                         $"'{teacher.Standard}', '{teacher.Subject}', {teacher.WeeklyCredit}, {Convert.ToInt32(teacher.OddEven)})";
                     SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
                     command.ExecuteNonQuery();
@@ -266,7 +286,13 @@ namespace SchoolTimetable
 					SQLiteCommand cmd;
 					//m_dbConnection.Open();  //Initiate connection to the db
 					cmd = m_dbConnection.CreateCommand();
-					cmd.CommandText = $"SELECT DISTINCT TeacherName FROM teachers";  //set the passed query
+
+					if (String.IsNullOrEmpty(TimetableTeachersName))
+					{
+						TimetableTeachersName = "teachers";
+					}
+
+					cmd.CommandText = $"SELECT DISTINCT TeacherName FROM {TimetableTeachersName}";  //set the passed query
 					ad = new SQLiteDataAdapter(cmd);
 					ad.Fill(dt); //fill the datasource
 					cbTeacherConstraints.DataSource = dt;
@@ -275,7 +301,7 @@ namespace SchoolTimetable
 
 					//Fill subject combobox in Constraints tab
 					cmd = m_dbConnection.CreateCommand();
-					cmd.CommandText = $"SELECT DISTINCT Subject FROM teachers";  //set the passed query
+					cmd.CommandText = $"SELECT DISTINCT Subject FROM {TimetableTeachersName}";  //set the passed query
 					ad = new SQLiteDataAdapter(cmd);
 					ad.Fill(dt2); //fill the datasource
 					cbSubjectListConstraints.DataSource = dt2;
@@ -313,6 +339,12 @@ namespace SchoolTimetable
 
 		private void btnImportTimeslot_Click(object sender, EventArgs e)
 		{
+			if (txtTimeslotList.Text == string.Empty)
+			{
+				MessageBox.Show("Please select any file first");
+				return;
+			}
+
 			ImportTimeslotListIntoDB();			
 		}
 
@@ -331,6 +363,10 @@ namespace SchoolTimetable
 		{
 			SQLiteDataAdapter ad;
 			DataTable dt = new DataTable();
+			if (String.IsNullOrEmpty(TimetableTeachersName))
+			{
+				TimetableTeachersName = "teachers";
+			}
 
 			try
 			{
@@ -338,7 +374,7 @@ namespace SchoolTimetable
 				SQLiteCommand cmd;
 				//m_dbConnection.Open();  //Initiate connection to the db
 				cmd = m_dbConnection.CreateCommand();
-				cmd.CommandText = $"SELECT * FROM teachers";  //set the passed query
+				cmd.CommandText = $"SELECT * FROM {TimetableTeachersName}";  //set the passed query
 				ad = new SQLiteDataAdapter(cmd);
 				ad.Fill(dt); //fill the datasource
 				dgvTeacherListInitial.DataSource = dt;				
@@ -450,6 +486,9 @@ namespace SchoolTimetable
 		{
 			listGroupAndAllocation = new List<List<Group>>();
 			AddGroupOdd1();
+			AddGroupEven1();
+			AddGroupEven2();
+			AddGroupEven3();
 		}
 
 		private void AddGroupOdd1()
@@ -462,7 +501,12 @@ namespace SchoolTimetable
 				SQLiteCommand cmd;
 				//m_dbConnection.Open();  //Initiate connection to the db
 				cmd = m_dbConnection.CreateCommand();
-				cmd.CommandText = $"select teachername, standard, subject from teachers where oddeven = 1 group by teachername order by standard";  //set the passed query
+				if (String.IsNullOrEmpty(TimetableTeachersName))
+				{
+					TimetableTeachersName = "teachers";
+				}
+
+				cmd.CommandText = $"select teachername, standard, subject from {TimetableTeachersName} where oddeven = 1 group by teachername order by standard";  //set the passed query
 				ad = new SQLiteDataAdapter(cmd);
 				ad.Fill(dt); //fill the datasource
 			}
@@ -491,7 +535,7 @@ namespace SchoolTimetable
 					Standard = dr["Standard"].ToString(),
 					Timeslot = 5,
 					Day = 4
-				});
+				});				
 
 				string sql = $"insert into Groups (TeacherName, Standard, Subject, OddEven) values " +
 					$"('{dr["TeacherName"].ToString()}'," +
@@ -501,6 +545,180 @@ namespace SchoolTimetable
 
 				sameStandard = dr["Standard"].ToString();			
 			}			
+
+			listGroupAndAllocation.Add(GroupOdd1);
+		}
+
+		private void AddGroupEven1()
+		{
+			SQLiteDataAdapter ad;
+			DataTable dt = new DataTable();
+
+			try
+			{
+				SQLiteCommand cmd;
+				//m_dbConnection.Open();  //Initiate connection to the db
+				cmd = m_dbConnection.CreateCommand();
+				if (String.IsNullOrEmpty(TimetableTeachersName))
+				{
+					TimetableTeachersName = "teachers";
+				}
+
+				cmd.CommandText = $"select teachername, standard, subject from {TimetableTeachersName} where oddeven = 2 group by teachername order by standard";  //set the passed query
+				ad = new SQLiteDataAdapter(cmd);
+				ad.Fill(dt); //fill the datasource
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
+			}
+
+			CreateGroupsTable();
+			ClearGroupsTable();
+
+			List<Group> GroupOdd1 = new List<Group>();
+
+			string sameStandard = "";
+			foreach (DataRow dr in dt.Rows)
+			{
+				//to ensure no duplicated standard is added
+				if (sameStandard == dr["standard"].ToString())
+					continue;
+
+				//Create 1 Odd Group
+				GroupOdd1.Add(new Group()
+				{
+					TeacherName = dr["TeacherName"].ToString(),
+					Subject = dr["Subject"].ToString(),
+					Standard = dr["Standard"].ToString(),
+					Timeslot = 2,
+					Day = 3
+				});
+
+				string sql = $"insert into Groups (TeacherName, Standard, Subject, OddEven) values " +
+					$"('{dr["TeacherName"].ToString()}'," +
+						$"'{dr["Standard"].ToString()}', '{dr["Subject"].ToString()}', 2)";
+				SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+				command.ExecuteNonQuery();
+
+				sameStandard = dr["Standard"].ToString();
+			}
+
+			listGroupAndAllocation.Add(GroupOdd1);
+		}
+
+		private void AddGroupEven2()
+		{
+			SQLiteDataAdapter ad;
+			DataTable dt = new DataTable();
+
+			try
+			{
+				SQLiteCommand cmd;
+				//m_dbConnection.Open();  //Initiate connection to the db
+				cmd = m_dbConnection.CreateCommand();
+				if (String.IsNullOrEmpty(TimetableTeachersName))
+				{
+					TimetableTeachersName = "teachers";
+				}
+
+				cmd.CommandText = $"select teachername, standard, subject from {TimetableTeachersName} where oddeven = 2 group by teachername order by standard";  //set the passed query
+				ad = new SQLiteDataAdapter(cmd);
+				ad.Fill(dt); //fill the datasource
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
+			}
+
+			CreateGroupsTable();
+			ClearGroupsTable();
+
+			List<Group> GroupOdd1 = new List<Group>();
+
+			string sameStandard = "";
+			foreach (DataRow dr in dt.Rows)
+			{
+				//to ensure no duplicated standard is added
+				if (sameStandard == dr["standard"].ToString())
+					continue;
+
+				//Create 1 Odd Group
+				GroupOdd1.Add(new Group()
+				{
+					TeacherName = dr["TeacherName"].ToString(),
+					Subject = dr["Subject"].ToString(),
+					Standard = dr["Standard"].ToString(),
+					Timeslot = 7,
+					Day = 2
+				});
+
+				string sql = $"insert into Groups (TeacherName, Standard, Subject, OddEven) values " +
+					$"('{dr["TeacherName"].ToString()}'," +
+						$"'{dr["Standard"].ToString()}', '{dr["Subject"].ToString()}', 2)";
+				SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+				command.ExecuteNonQuery();
+
+				sameStandard = dr["Standard"].ToString();
+			}
+
+			listGroupAndAllocation.Add(GroupOdd1);
+		}
+
+		private void AddGroupEven3()
+		{
+			SQLiteDataAdapter ad;
+			DataTable dt = new DataTable();
+
+			try
+			{
+				SQLiteCommand cmd;
+				//m_dbConnection.Open();  //Initiate connection to the db
+				cmd = m_dbConnection.CreateCommand();
+				if (String.IsNullOrEmpty(TimetableTeachersName))
+				{
+					TimetableTeachersName = "teachers";
+				}
+
+				cmd.CommandText = $"select teachername, standard, subject from {TimetableTeachersName} where oddeven = 2 group by teachername order by standard";  //set the passed query
+				ad = new SQLiteDataAdapter(cmd);
+				ad.Fill(dt); //fill the datasource
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message);
+			}
+
+			CreateGroupsTable();
+			ClearGroupsTable();
+
+			List<Group> GroupOdd1 = new List<Group>();
+
+			string sameStandard = "";
+			foreach (DataRow dr in dt.Rows)
+			{
+				//to ensure no duplicated standard is added
+				if (sameStandard == dr["standard"].ToString())
+					continue;
+
+				//Create 1 Odd Group
+				GroupOdd1.Add(new Group()
+				{
+					TeacherName = dr["TeacherName"].ToString(),
+					Subject = dr["Subject"].ToString(),
+					Standard = dr["Standard"].ToString(),
+					Timeslot = 2,
+					Day = 4
+				});
+
+				string sql = $"insert into Groups (TeacherName, Standard, Subject, OddEven) values " +
+					$"('{dr["TeacherName"].ToString()}'," +
+						$"'{dr["Standard"].ToString()}', '{dr["Subject"].ToString()}', 2)";
+				SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+				command.ExecuteNonQuery();
+
+				sameStandard = dr["Standard"].ToString();
+			}
 
 			listGroupAndAllocation.Add(GroupOdd1);
 		}
@@ -516,7 +734,12 @@ namespace SchoolTimetable
 				SQLiteCommand cmd;
 				//m_dbConnection.Open();  //Initiate connection to the db
 				cmd = m_dbConnection.CreateCommand();
-				cmd.CommandText = $"select * from teachers where standard = '{selectedClass}' order by weeklycredit desc";
+				if (String.IsNullOrEmpty(TimetableTeachersName))
+				{
+					TimetableTeachersName = "teachers";
+				}
+
+				cmd.CommandText = $"select * from {TimetableTeachersName} where standard = '{selectedClass}' order by weeklycredit desc";
 				ad = new SQLiteDataAdapter(cmd);
 				ad.Fill(dt); //fill the datasource
 
@@ -1088,19 +1311,19 @@ namespace SchoolTimetable
 			}
 			else if(selectedCBAnalysis.Contains("class"))
 			{
-				cbClassViewOutput.SelectedIndex = Convert.ToInt32(cbChooseClassAnalysis.Text.Substring(1, 1));
+				cbClassViewOutput.SelectedIndex = Convert.ToInt32(cbChooseClassAnalysis.Text.Substring(1, 1)) - 1;
 				btnShowTimetableViewOutput_Click(null, null);
 				PerformChildFurtherView(analysis);
 			}
 			else if (selectedCBAnalysis.Contains("subject"))
 			{
-				cbClassViewOutput.SelectedIndex = Convert.ToInt32(cbChooseYear.Text.Substring(1, 1));
+				cbClassViewOutput.SelectedIndex = Convert.ToInt32(cbChooseYear.Text.Substring(1, 1)) - 1;
 				btnShowTimetableViewOutput_Click(null, null);
 				PerformChildFurtherView(analysis);
 			}
 			else if (selectedCBAnalysis.Contains("sitin"))
 			{
-				cbClassViewOutput.SelectedIndex = Convert.ToInt32(cbChooseClassSitIn.Text.Substring(1, 1));
+				cbClassViewOutput.SelectedIndex = Convert.ToInt32(cbChooseClassSitIn.Text.Substring(1, 1)) - 1;
 				btnShowTimetableViewOutput_Click(null, null);
 				PerformChildFurtherView(analysis);
 			}
@@ -1121,6 +1344,10 @@ namespace SchoolTimetable
 
 			SQLiteDataAdapter ad;
 			DataTable dt = new DataTable();
+			if (String.IsNullOrEmpty(TimetableTeachersName))
+			{
+				TimetableTeachersName = "teachers";
+			}
 
 			//Fill teacher combobox in Constraints tab
 			SQLiteCommand cmd;
@@ -1129,7 +1356,7 @@ namespace SchoolTimetable
 			//default selection
 			if (String.IsNullOrEmpty(selectedCBAnalysis) || selectedCBAnalysis.Contains("teacher"))
 			{
-				cmd.CommandText = $"select * from teachers where teachername = '{selectedTeacher}' order by standard";
+				cmd.CommandText = $"select * from {TimetableTeachersName} where teachername = '{selectedTeacher}' order by standard";
 				publicResult = publicResult.Where(a => a.TeacherName == selectedTeacher).OrderByDescending(a => a.WeeklyCredit).ToList();
 
 				foreach (var teacher in publicResult)
@@ -1140,11 +1367,30 @@ namespace SchoolTimetable
 						rowToUpdate.Cells[timeslot.TimeslotDay].Value = teacher.Subject;
 					}
 				}
+
+				analysis.lblAnalysisTitle.Text = $"Analysis Teacher Timetable: {selectedTeacher}";
 			}
 			else if(selectedCBAnalysis.Contains("class"))
 			{
-				selectedYear = cbChooseClassAnalysis.Text;
-				cmd.CommandText = $"select * from teachers where standard = '{selectedYear}' order by standard";
+				var selectedClass = cbChooseClassAnalysis.Text;
+				cmd.CommandText = $"select * from {TimetableTeachersName} where standard = '{selectedClass}' order by standard";
+				publicResult = publicResult.Where(a => a.Standard == selectedClass).OrderByDescending(a => a.WeeklyCredit).ToList();
+
+				//reset grid
+				analysis.dgvViewOutputAnalysis.Rows.Clear();
+				analysis.dgvViewOutputAnalysis.Refresh();
+
+				foreach (DataGridViewRow row1 in dgvViewOutput.Rows)
+				{
+					analysis.dgvViewOutputAnalysis.Rows.Add(CloneWithValues(row1));
+				}
+
+				analysis.lblAnalysisTitle.Text = $"Analysis Class Timetable: {selectedClass}";
+			}
+			else if (selectedCBAnalysis.Contains("day"))
+			{
+				var selectedDay = cbChooseDayByDay.Text;
+				cmd.CommandText = $"select * from {TimetableTeachersName} where standard = '{selectedYear}' order by standard";
 				publicResult = publicResult.Where(a => a.Standard == selectedYear).OrderByDescending(a => a.WeeklyCredit).ToList();
 
 				//reset grid
@@ -1154,14 +1400,18 @@ namespace SchoolTimetable
 				foreach (DataGridViewRow row1 in dgvViewOutput.Rows)
 				{
 					analysis.dgvViewOutputAnalysis.Rows.Add(CloneWithValues(row1));
-				}				
+				}
+
+				analysis.lblAnalysisTitle.Text = $"Analysis School Timetable by day: {selectedDay}";
 			}
 			else if (selectedCBAnalysis.Contains("subject"))
 			{
 				selectedYear = cbChooseYear.Text;
 				string selectedSubject = cbChooseSubject.Text;
-				cmd.CommandText = $"select * from teachers where standard = '{selectedYear}' and subject = '{selectedSubject}' order by standard";
+				cmd.CommandText = $"select * from {TimetableTeachersName} where standard = '{selectedYear}' and subject = '{selectedSubject}' order by standard";
 				publicResult = publicResult.Where(a => a.Standard == selectedYear).OrderByDescending(a => a.WeeklyCredit).ToList();
+
+				analysis.lblAnalysisTitle.Text = $"Analysis Subject: {selectedSubject} for Year: {selectedYear}";
 
 				//reset grid
 				analysis.dgvViewOutputAnalysis.Rows.Clear();
@@ -1199,11 +1449,13 @@ namespace SchoolTimetable
 			}
 			else if (selectedCBAnalysis.Contains("sitin"))
 			{
-				analysis.dgvViewOutputAnalysis.Visible = false;				
+				analysis.dgvViewOutputAnalysis.Visible = false;
 
 				string selectedClass = cbChooseClassSitIn.Text;
 				string selectedDay = cbChooseDaySitIn.Text;
 				string selectedTimeslot = cbChooseTimeslotIn.Text;
+
+				analysis.lblAnalysisTitle.Text = $"Analysis Sit In for Class: {selectedClass}, Day: {selectedDay}, Timeslot: {selectedTimeslot}";
 
 				analysis.lblDetailsSitIn.Text = $"Class {selectedClass}, Day {selectedDay}, Timeslot {selectedTimeslot}, Available teachers:";
 
@@ -1285,7 +1537,18 @@ namespace SchoolTimetable
 					}
 				}
 
-				cmd.CommandText = $"select teachername from teachers where teachername != '{occupiedTeacher}' group by teachername order by standard LIMIT 3";
+				Random rnd = new Random();
+				int randomNumber = rnd.Next(1, 13);
+
+				//Random number
+				if (randomNumber < 6)
+				{
+					cmd.CommandText = $"select teachername from {TimetableTeachersName} where teachername != '{occupiedTeacher}' group by teachername order by standard DESC LIMIT 3";
+				}
+				else
+				{
+					cmd.CommandText = $"select teachername from {TimetableTeachersName} where teachername != '{occupiedTeacher}' group by teachername order by standard LIMIT 3";
+				}
 			}
 			else
 			{
@@ -1351,6 +1614,10 @@ namespace SchoolTimetable
 			selectedCBAnalysis = fromCB;
 			selectedCBAnalysisValue1 = cb.Text;
 		}
+		private void cbChooseDayByDay_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			SetSelectedComboBoxForAnalysis(sender, "day");
+		}
 
 		private void cbTeacherAnalyzeOutputs_SelectedIndexChanged(object sender, EventArgs e)
 		{
@@ -1370,6 +1637,30 @@ namespace SchoolTimetable
 		private void cbChooseClassSitIn_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			SetSelectedComboBoxForAnalysis(sender, "sitin");
+		}
+
+		private void btnPrintViewOutput_Click(object sender, EventArgs e)
+		{
+			//Print the result
+		}
+
+		private void btnRegisterTimetable_Click(object sender, EventArgs e)
+		{
+			TimetableTeachersName = txtTimetableName.Text;
+			MessageBox.Show($"Successfully register timetable's name as {TimetableTeachersName}");
+		}
+
+		private void btnClear_Click(object sender, EventArgs e)
+		{
+			txtTimetableName.Text = "";
+			txtTeacherList.Text = "";
+			txtTimeslotList.Text = "";
+			txtImportStatus.Text = "";
+		}
+
+		private void cbChooseTimeslotIn_SelectedIndexChanged(object sender, EventArgs e)
+		{
+
 		}
 	}
 }
