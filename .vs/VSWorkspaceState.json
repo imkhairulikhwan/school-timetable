@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\SchoolTimetable"
   ],
-  "SelectedNode": "\\SchoolTimetable.sln",
+  "SelectedNode": "\\SchoolTimetable\\Form1.cs",
   "PreviewInSolutionExplorer": false
 }

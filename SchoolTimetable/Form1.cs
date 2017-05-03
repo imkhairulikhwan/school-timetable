@@ -35,8 +35,8 @@ namespace SchoolTimetable
             Helper helper = new Helper();
             helper.CreateNewDatabase();
             helper.ConnectToDatabase();
-            helper.CreateTable();
-            helper.FillTable();
+            //helper.CreateTable();
+            //helper.FillTable();
             //helper.PrintHighscores();
 
             openFileDialog1 = new OpenFileDialog();
