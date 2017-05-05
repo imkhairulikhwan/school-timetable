@@ -35,3 +35,4 @@ C:\Users\User\Source\Repos\school-timetable\SchoolTimetable\obj\Debug\SchoolTime
 C:\Users\User\Source\Repos\school-timetable\SchoolTimetable\obj\Debug\SchoolTimetable.exe
 C:\Users\User\Source\Repos\school-timetable\SchoolTimetable\obj\Debug\SchoolTimetable.pdb
 C:\Users\User\Source\Repos\school-timetable\SchoolTimetable\obj\Debug\SchoolTimetable.AnalysisOutput.resources
+C:\Users\kibmohd.RIADEV\Source\Repos\school-timetable\SchoolTimetable\obj\Debug\SchoolTimetable.AnalysisOutput.resources

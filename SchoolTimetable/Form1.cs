@@ -19,7 +19,8 @@ namespace SchoolTimetable
         string teacherListFileName;
 		int RowToSwitch;
 		List<List<Group>> listGroupAndAllocation;
-		string selectedCBAnalysis;
+        List<DataGridView> AllYearsDataGrids;
+        string selectedCBAnalysis;
 		string selectedCBAnalysisValue1;
 		string selectedCBAnalysisValue2;
 		string selectedCBAnalysisValue3;
@@ -466,23 +467,72 @@ namespace SchoolTimetable
 
 			ConnectToDB();
 			//reset grid
-			dgvViewOutput.Rows.Clear();
-			dgvViewOutput.Refresh();
-			DataGridViewRow row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
-			dgvViewOutput.Rows.Add(row);
-			row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
-			dgvViewOutput.Rows.Add(row);
-			row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
-			dgvViewOutput.Rows.Add(row);
-			row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
-			dgvViewOutput.Rows.Add(row);
-			row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
-			dgvViewOutput.Rows.Add(row);
+			//dgvViewOutput.Rows.Clear();
+			//dgvViewOutput.Refresh();
+			//DataGridViewRow row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
+			//dgvViewOutput.Rows.Add(row);
+			//row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
+			//dgvViewOutput.Rows.Add(row);
+			//row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
+			//dgvViewOutput.Rows.Add(row);
+			//row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
+			//dgvViewOutput.Rows.Add(row);
+			//row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
+			//dgvViewOutput.Rows.Add(row);
 
-			PopulateTimetableBasedOnClass(cbClassViewOutput.Text);
+            AllYearsDataGrids = new List<DataGridView>();
+            for(int i = 0; i < 5; i ++)
+            {
+                var year = $"Y{i + 1}";
+                //reset grid
+                dgvViewOutput.Rows.Clear();
+                dgvViewOutput.Refresh();
+                DataGridViewRow row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
+                dgvViewOutput.Rows.Add(row);
+                row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
+                dgvViewOutput.Rows.Add(row);
+                row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
+                dgvViewOutput.Rows.Add(row);
+                row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
+                dgvViewOutput.Rows.Add(row);
+                row = (DataGridViewRow)dgvViewOutput.Rows[0].Clone();
+                dgvViewOutput.Rows.Add(row);
+
+                var dataGridClone = new DataGridView();
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[0].Clone());
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[1].Clone());
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[2].Clone());
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[3].Clone());
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[4].Clone());
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[5].Clone());
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[6].Clone());
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[7].Clone());
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[8].Clone());
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[9].Clone());
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[10].Clone());
+                dataGridClone.Columns.Add((DataGridViewColumn)dgvViewOutput.Columns[11].Clone());
+                dataGridClone.Rows.Add((DataGridViewRow)dgvViewOutput.Rows[0].Clone());
+                dataGridClone.Rows.Add((DataGridViewRow)dgvViewOutput.Rows[0].Clone());
+                dataGridClone.Rows.Add((DataGridViewRow)dgvViewOutput.Rows[0].Clone());
+                dataGridClone.Rows.Add((DataGridViewRow)dgvViewOutput.Rows[0].Clone());
+                dataGridClone.Rows.Add((DataGridViewRow)dgvViewOutput.Rows[0].Clone());
+
+                PopulateTimetableBasedOnClass(year, dataGridClone);
+
+                AllYearsDataGrids.Add(dataGridClone);
+            }
+
+            //We need to remove the teacher's name from the grid
+            //RemoveTeachersName();
+            //PopulateTimetableBasedOnClass(cbClassViewOutput.Text);
 		}
 
-		private void AddGroupAndAllocation()
+        private void RemoveTeachersName()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AddGroupAndAllocation()
 		{
 			listGroupAndAllocation = new List<List<Group>>();
 			AddGroupOdd1();
@@ -723,7 +773,11 @@ namespace SchoolTimetable
 			listGroupAndAllocation.Add(GroupOdd1);
 		}
 
-		private void PopulateTimetableBasedOnClass(string selectedClass)
+        /// <summary>
+        /// Before populating to individual timeslot, need to check that it does not clash with the other years (for same teacher) 
+        /// </summary>
+        /// <param name="selectedClass"></param>
+		private void PopulateTimetableBasedOnClass(string selectedClass, DataGridView dataGridView)
 		{
 			try
 			{
@@ -769,7 +823,8 @@ namespace SchoolTimetable
 				int randomize = 0;
 
 				string groupSubject = "";
-				FillUpGroupAndAllocation(selectedClass, out groupSubject);
+                string teacherName = "";
+				DataGridView dgvOutput =  FillUpGroupAndAllocation(selectedClass);
 				bool alreadySetGroupCreditOnce = false;
 
 				while(repeat)
@@ -789,13 +844,22 @@ namespace SchoolTimetable
 
 					foreach (Teacher teacher in result)
 					{
-						//Check for group subject first, as it has been allocated already
-						if(teacher.Subject == groupSubject && !alreadySetGroupCreditOnce)
-						{
-							alreadySetGroupCreditOnce = true;
-							teacher.WeeklyUsedCredit++;
-							continue;
-						}
+                        foreach(var groups in listGroupAndAllocation)
+                        {
+                            foreach(var group in groups)
+                            {
+                                if(group.Standard == selectedClass)
+                                {
+                                    //Check for group subject first, as it has been allocated already
+                                    if (teacher.Subject == group.Subject && !alreadySetGroupCreditOnce && teacher.TeacherName == group.TeacherName)
+                                    {
+                                        alreadySetGroupCreditOnce = true;
+                                        teacher.WeeklyUsedCredit++;
+                                        continue;
+                                    }
+                                }
+                            }
+                        }						
 
 						//it's end of week, don't add anymore into table
 						if (day == 5)
@@ -852,9 +916,10 @@ namespace SchoolTimetable
 							}
 						}
 
-						DataGridViewRow row = (DataGridViewRow)dgvViewOutput.Rows[day];
+                        //DataGridViewRow row = (DataGridViewRow)dgvViewOutput.Rows[day];
+                        DataGridViewRow row = dataGridView.Rows[day];
 
-						if (timeslot == 0 && day == 0)
+                        if (timeslot == 0 && day == 0)
 						{
 							row.Cells[timeslot].Value = "Sunday";
 							timeslot++;
@@ -962,29 +1027,30 @@ namespace SchoolTimetable
 						//else, add as normal
 						else if (teacher.OddEven == Timeslot.Even)
 						{
-							if(!ThisSubjectExistsOnSameDay((DataGridViewRow)dgvViewOutput.Rows[day], teacher.Subject))
+							if(!ThisSubjectExistsOnSameDay((DataGridViewRow)dgvViewOutput.Rows[day], teacher.Subject) && !IsSameTeacherAlreadyTeachingThisTimeslot(teacher.TeacherName, timeslot, day, teacher.Subject))
 							{								
 								//Handle special case of credit more than 10
 								if (teacher.WeeklyCredit > 10 && teacher.WeeklyUsedCredit < 6)
 								{
-									row.Cells[timeslot].Value = teacher.Subject;
-									teacher.ListOfTimeslot.Add(new TimeslotDetails()
+                                    //row.Cells[timeslot].Value = teacher.Subject;
+                                    row.Cells[timeslot].Value = $"{teacher.Subject}|{teacher.TeacherName}";
+                                    teacher.ListOfTimeslot.Add(new TimeslotDetails()
 									{
 										TimeslotDay = timeslot,
 										Day = day
 									});
 									timeslot++;
 
-									row.Cells[timeslot].Value = teacher.Subject;
-									teacher.ListOfTimeslot.Add(new TimeslotDetails()
+									row.Cells[timeslot].Value = $"{teacher.Subject}|{teacher.TeacherName}";
+                                    teacher.ListOfTimeslot.Add(new TimeslotDetails()
 									{
 										TimeslotDay = timeslot,
 										Day = day
 									});
 									timeslot++;
 
-									row.Cells[timeslot].Value = teacher.Subject;
-									teacher.ListOfTimeslot.Add(new TimeslotDetails()
+									row.Cells[timeslot].Value = $"{teacher.Subject}|{teacher.TeacherName}";
+                                    teacher.ListOfTimeslot.Add(new TimeslotDetails()
 									{
 										TimeslotDay = timeslot,
 										Day = day
@@ -995,16 +1061,16 @@ namespace SchoolTimetable
 								}								
 								else
 								{
-									row.Cells[timeslot].Value = teacher.Subject;
-									teacher.ListOfTimeslot.Add(new TimeslotDetails()
+									row.Cells[timeslot].Value = $"{teacher.Subject}|{teacher.TeacherName}";
+                                    teacher.ListOfTimeslot.Add(new TimeslotDetails()
 									{
 										TimeslotDay = timeslot,
 										Day = day
 									});
 									timeslot++;
 
-									row.Cells[timeslot].Value = teacher.Subject;
-									teacher.ListOfTimeslot.Add(new TimeslotDetails()
+									row.Cells[timeslot].Value = $"{teacher.Subject}|{teacher.TeacherName}";
+                                    teacher.ListOfTimeslot.Add(new TimeslotDetails()
 									{
 										TimeslotDay = timeslot,
 										Day = day
@@ -1029,8 +1095,8 @@ namespace SchoolTimetable
 
 							if (!ThisSubjectExistsOnSameDay((DataGridViewRow)dgvViewOutput.Rows[day], teacher.Subject))
 							{
-								row.Cells[timeslot].Value = teacher.Subject;
-								teacher.ListOfTimeslot.Add(new TimeslotDetails()
+								row.Cells[timeslot].Value = $"{teacher.Subject}|{teacher.TeacherName}";
+                                teacher.ListOfTimeslot.Add(new TimeslotDetails()
 								{
 									TimeslotDay = timeslot,
 									Day = day
@@ -1086,10 +1152,11 @@ namespace SchoolTimetable
 										Day = cell.RowIndex
 									});
 
-									valueToReplace = teacher.Subject;
-									teacher.WeeklyUsedCredit++;
-									cell.Value = valueToReplace;
-									break;
+                                    //valueToReplace = teacher.Subject;
+                                    valueToReplace = $"{teacher.Subject}|{teacher.TeacherName}";
+                                    teacher.WeeklyUsedCredit++;
+                                    cell.Value = valueToReplace;
+                                    break;
 								}
 							}	
 						}
@@ -1097,6 +1164,7 @@ namespace SchoolTimetable
 				}
 
 				string subjectFromOtherDay = string.Empty;
+                string teacherFromOtherDay = string.Empty;
 				string subjectForThisDay = string.Empty;
 
 				//return;
@@ -1131,22 +1199,27 @@ namespace SchoolTimetable
 							{
 								if (teacher.WeeklyUsedCredit == teacher.WeeklyCredit && teacher.OddEven == Timeslot.Even && !ThisSubjectExistsOnSameDay(row, teacher.Subject) && SubjectsDontCoExist(teacher.Subject, subjectForThisDay))
 								{
-									subjectFromOtherDay = teacher.Subject;									
-									break;
+									subjectFromOtherDay = teacher.Subject;
+                                    teacherFromOtherDay = teacher.TeacherName;
+                                    break;
 								}
 							}
 
-							cell.Value = subjectFromOtherDay;
-							row.Cells[cell.ColumnIndex + 1].Value = subjectFromOtherDay;							
+                            //cell.Value = subjectFromOtherDay;
+                            //row.Cells[cell.ColumnIndex + 1].Value = subjectFromOtherDay;
+                            cell.Value = $"{subjectFromOtherDay}|{teacherFromOtherDay}";
+                            row.Cells[cell.ColumnIndex + 1].Value = $"{subjectFromOtherDay}|{teacherFromOtherDay}";
 
-							//Swap the subjects
-							foreach (DataGridViewCell cell2 in dgvViewOutput.Rows[RowToSwitch].Cells)
+                            //Swap the subjects
+                            foreach (DataGridViewCell cell2 in dgvViewOutput.Rows[RowToSwitch].Cells)
 							{
-								if (cell2.Value.ToString() == subjectFromOtherDay)
-								{
-									cell2.Value = subjectForThisDay;
+                                //if (cell2.Value.ToString() == subjectFromOtherDay)
+                                if (cell2.Value.ToString().Contains(subjectFromOtherDay))
+                                {
+                                    //cell2.Value = subjectForThisDay;
+                                    cell2.Value = $"{subjectForThisDay}|{teacherToSwap}";
 
-									result.Where(a => a.TeacherName == teacherToSwap && a.Standard == standardToSwap && a.Subject == subjectForThisDay)
+                                    result.Where(a => a.TeacherName == teacherToSwap && a.Standard == standardToSwap && a.Subject == subjectForThisDay)
 										.SingleOrDefault().ListOfTimeslot.Add(new TimeslotDetails()
 									{
 										TimeslotDay = cell2.ColumnIndex,
@@ -1168,23 +1241,48 @@ namespace SchoolTimetable
 			}
 		}
 
-		private void FillUpGroupAndAllocation(string selectedClass, out string subject)
+        private bool IsSameTeacherAlreadyTeachingThisTimeslot(string teacherName, int timeslot, int day, string subject)
+        {
+            bool isSameTeacherAlreadyTeachingThisTimeslot = false;
+
+            try
+            {
+                foreach (var dataGrid in AllYearsDataGrids)
+                {
+                    var subjectTaughtInSameTimeslot = dataGrid.Rows[day].Cells[timeslot].Value;
+                    if (subjectTaughtInSameTimeslot != null && subjectTaughtInSameTimeslot.ToString().Contains(subject))
+                    {
+                        isSameTeacherAlreadyTeachingThisTimeslot = true;
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                isSameTeacherAlreadyTeachingThisTimeslot = false;
+            }
+
+            return isSameTeacherAlreadyTeachingThisTimeslot;
+        }
+
+        private DataGridView FillUpGroupAndAllocation(string selectedClass)
 		{
 			DataGridView dgv = dgvViewOutput;
-			subject = "";
 
-			foreach (var groups in listGroupAndAllocation)
+            foreach (var groups in listGroupAndAllocation)
 			{
 				foreach(var group in groups)
 				{
 					if(group.Standard == selectedClass)
 					{
-						dgvViewOutput.Rows[group.Day].Cells[group.Timeslot].Value = group.Subject;
-						subject = group.Subject;
+						dgvViewOutput.Rows[group.Day].Cells[group.Timeslot].Value = $"{group.Subject}|{group.TeacherName}";
 					}
 				}
 			}
-		}
+
+            return dgvViewOutput;
+        }
 
 		private bool SubjectsDontCoExist(string subject, string subjectForThisDay)
 		{
@@ -1243,8 +1341,9 @@ namespace SchoolTimetable
 				if (cell.Value == null)
 					continue;
 
-				if (cell.Value.ToString() == subject)
-				{
+                //if (cell.Value.ToString() == subject)
+                if (cell.Value.ToString().Contains(subject))
+                {
 					subjectExistsOnSameDay = true;
 					break;
 				}					
@@ -1662,6 +1761,19 @@ namespace SchoolTimetable
 		{
 
 		}
-	}
+
+        private void cbClassViewOutput_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if(!string.IsNullOrEmpty(cbClassViewOutput.Text))
+            {
+                ShowGridAccordingToClasses(cbClassViewOutput.Text);
+            }            
+        }
+
+        private void ShowGridAccordingToClasses(string text)
+        {
+            //throw new NotImplementedException();
+        }
+    }
 }
 
